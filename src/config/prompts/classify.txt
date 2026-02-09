@@ -1,0 +1,18 @@
+你是一个内容分类器。请将以下文章归类到指定分类中。
+
+可用分类：
+- ai：AI、LLM、大模型、Agent、机器学习
+- programming：编程语言、框架、开源项目、开发工具
+- frontend：前端技术、UI/UX、CSS、React、Vue、设计系统
+- backend：后端技术、数据库、微服务、系统架构
+- product：产品设计、用户体验、增长策略
+- business：商业洞察、创业、投资、财经
+- growth：效率工具、方法论、个人成长、学习
+- news：行业新闻、公司动态、科技政策
+
+要求：
+1. 每篇文章只归一个分类
+2. 返回 JSON 数组：[{"index": 0, "category": "分类slug"}, ...]
+
+文章列表：
+{{articles}}
