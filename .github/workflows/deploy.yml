@@ -1,0 +1,141 @@
+name: Deploy to Production
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch: # 支持手动触发
+
+jobs:
+  deploy:
+    name: Build & Deploy
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+
+    steps:
+      # 1. 拉取代码
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      # 2. 安装 Node.js
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+
+      # 3. 安装依赖
+      - name: Install dependencies
+        run: npm ci
+
+      # 4. 构建（standalone 模式）
+      - name: Build
+        run: npm run build
+        env:
+          NEXT_PUBLIC_SUPABASE_URL: ${{ secrets.NEXT_PUBLIC_SUPABASE_URL }}
+          NEXT_PUBLIC_SUPABASE_ANON_KEY: ${{ secrets.NEXT_PUBLIC_SUPABASE_ANON_KEY }}
+
+      # 5. 打包部署产物
+      - name: Package standalone build
+        run: |
+          mkdir -p deploy-bundle
+          cp -a .next/standalone/. deploy-bundle/
+          mkdir -p deploy-bundle/.next/static
+          cp -a .next/static/. deploy-bundle/.next/static/
+          if [ -d public ]; then
+            mkdir -p deploy-bundle/public
+            cp -a public/. deploy-bundle/public/
+          fi
+          tar -czf deploy-bundle.tar.gz -C deploy-bundle .
+
+      # 6. 配置 SSH
+      - name: Setup SSH
+        run: |
+          mkdir -p ~/.ssh
+          echo "${{ secrets.SSH_PRIVATE_KEY }}" > ~/.ssh/id_rsa
+          chmod 600 ~/.ssh/id_rsa
+          ssh-keyscan -H ${{ secrets.SERVER_HOST }} >> ~/.ssh/known_hosts 2>/dev/null
+
+      # 7. 上传到服务器
+      - name: Upload to server
+        run: |
+          scp deploy-bundle.tar.gz ${{ secrets.SERVER_USER }}@${{ secrets.SERVER_HOST }}:/opt/knowleage-report/deploy-bundle.tar.gz
+
+      # 8. 远程部署
+      - name: Deploy on server
+        run: |
+          ssh ${{ secrets.SERVER_USER }}@${{ secrets.SERVER_HOST }} bash -s << 'EOF'
+            set -e
+            cd /opt/knowleage-report
+
+            # 解压新版本
+            tar -xzf deploy-bundle.tar.gz
+            rm -f deploy-bundle.tar.gz
+
+            # 安装 PM2（如果没有）
+            if ! command -v pm2 &> /dev/null; then
+              npm install -g pm2
+            fi
+
+            # 生成 ecosystem 配置
+            cat > ecosystem.config.cjs << 'PMEOF'
+          module.exports = {
+            apps: [{
+              name: 'knowleage-report',
+              script: 'server.js',
+              cwd: '/opt/knowleage-report',
+              env: {
+                NODE_ENV: 'production',
+                PORT: 3000,
+                HOSTNAME: '0.0.0.0'
+              },
+              instances: 1,
+              autorestart: true,
+              max_memory_restart: '512M',
+              log_date_format: 'YYYY-MM-DD HH:mm:ss'
+            }]
+          }
+          PMEOF
+
+            # 重启应用
+            pm2 delete knowleage-report 2>/dev/null || true
+            pm2 start ecosystem.config.cjs
+            pm2 save
+
+            # 确保 Nginx 配置存在
+            CONF="/etc/nginx/conf.d/knowleage-report.conf"
+            if [ ! -f "$CONF" ]; then
+              cat > "$CONF" << 'NGINXEOF'
+          server {
+              listen 80;
+              server_name _;
+
+              add_header X-Frame-Options "SAMEORIGIN" always;
+              add_header X-Content-Type-Options "nosniff" always;
+
+              location /_next/static {
+                  proxy_pass http://127.0.0.1:3000;
+                  expires 365d;
+                  add_header Cache-Control "public, immutable";
+              }
+
+              location / {
+                  proxy_pass http://127.0.0.1:3000;
+                  proxy_http_version 1.1;
+                  proxy_set_header Upgrade $http_upgrade;
+                  proxy_set_header Connection 'upgrade';
+                  proxy_set_header Host $host;
+                  proxy_set_header X-Real-IP $remote_addr;
+                  proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+                  proxy_set_header X-Forwarded-Proto $scheme;
+                  proxy_cache_bypass $http_upgrade;
+                  proxy_read_timeout 300s;
+                  proxy_send_timeout 300s;
+              }
+          }
+          NGINXEOF
+            fi
+
+            nginx -t && systemctl reload nginx
+            echo "Deploy success!"
+            pm2 list
+          EOF
