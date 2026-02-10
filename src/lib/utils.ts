@@ -6,6 +6,7 @@ export function getTodayDate(): string {
 /** 格式化日期为中文可读格式 */
 export function formatDateCN(dateStr: string): string {
   const date = new Date(dateStr);
+  if (isNaN(date.getTime())) return dateStr;
   return new Intl.DateTimeFormat("zh-CN", {
     year: "numeric",
     month: "long",
@@ -18,6 +19,8 @@ export function formatDateCN(dateStr: string): string {
 export function formatRelativeTime(dateStr: string): string {
   const now = Date.now();
   const target = new Date(dateStr).getTime();
+  if (isNaN(target)) return dateStr;
+  
   const diffMs = now - target;
   const diffMin = Math.floor(diffMs / 60000);
   const diffHour = Math.floor(diffMs / 3600000);

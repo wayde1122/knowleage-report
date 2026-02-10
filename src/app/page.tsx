@@ -111,165 +111,111 @@ export default function HomePage() {
   }, []);
 
   return (
-    <div className="flex h-full flex-col">
+    <div className="flex h-full flex-col bg-background text-foreground">
       <SiteHeader onSearchOpen={() => setSearchOpen(true)} />
 
       <div className="flex min-h-0 flex-1">
-        {/* 左侧日期导航 */}
-        <div className="hidden h-full lg:block">
-          <div className="h-full overflow-y-auto">
-            <DateSidebar currentDate={currentDate} onDateChange={handleDateChange} />
-          </div>
+        {/* Sidebar */}
+        <div className="hidden h-full w-56 shrink-0 border-r border-border lg:block">
+           <div className="h-full overflow-y-auto">
+             <DateSidebar currentDate={currentDate} onDateChange={handleDateChange} />
+           </div>
         </div>
 
-        {/* 主内容 */}
-        <main className="min-w-0 flex-1 overflow-y-auto px-4 py-6 sm:px-8 lg:px-12">
-          {/* 视图切换 + 移动端日期 */}
-          <div className="mb-6 flex flex-wrap items-center justify-between gap-4">
-            {/* 纯文字 Tab 切换 */}
-            <nav className="flex gap-0 border-b border-border">
+        {/* Main */}
+        <main className="min-w-0 flex-1 overflow-y-auto">
+          <div className="mx-auto max-w-5xl px-6 py-8 lg:px-10">
+            
+            {/* View Toggle */}
+            <div className="mb-10 flex items-center gap-6 border-b border-border pb-4">
               <button
                 onClick={() => setViewMode("report")}
                 className={cn(
-                  "relative px-4 py-2 text-sm transition-colors",
-                  viewMode === "report"
-                    ? "font-semibold text-foreground"
-                    : "text-muted-foreground hover:text-foreground"
+                  "cursor-pointer text-lg font-semibold transition-colors hover:text-foreground",
+                  viewMode === "report" ? "text-foreground" : "text-muted-foreground"
                 )}
               >
-                AI 日报
-                {viewMode === "report" && (
-                  <span className="absolute inset-x-0 -bottom-px h-[2px] bg-primary" />
-                )}
+                Briefing
               </button>
               <button
                 onClick={() => setViewMode("articles")}
                 className={cn(
-                  "relative px-4 py-2 text-sm transition-colors",
-                  viewMode === "articles"
-                    ? "font-semibold text-foreground"
-                    : "text-muted-foreground hover:text-foreground"
+                  "cursor-pointer text-lg font-semibold transition-colors hover:text-foreground",
+                  viewMode === "articles" ? "text-foreground" : "text-muted-foreground"
                 )}
               >
-                文章列表
-                {viewMode === "articles" && (
-                  <span className="absolute inset-x-0 -bottom-px h-[2px] bg-primary" />
-                )}
+                Feed
               </button>
-            </nav>
-
-            {/* 移动端日期选择 */}
-            <div className="flex items-center gap-2 lg:hidden">
-              <button
-                onClick={() => {
-                  const d = new Date(currentDate);
-                  d.setDate(d.getDate() - 1);
-                  handleDateChange(new Intl.DateTimeFormat("sv-SE").format(d));
-                }}
-                className="rounded border border-border px-2 py-1.5 text-muted-foreground hover:bg-secondary"
-              >
-                <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
-                </svg>
-              </button>
-              <span className="text-sm tabular-nums text-foreground">{currentDate}</span>
-              <button
-                onClick={() => {
-                  const today = getTodayDate();
-                  if (currentDate < today) {
-                    const d = new Date(currentDate);
-                    d.setDate(d.getDate() + 1);
-                    handleDateChange(new Intl.DateTimeFormat("sv-SE").format(d));
-                  }
-                }}
-                disabled={currentDate >= getTodayDate()}
-                className="rounded border border-border px-2 py-1.5 text-muted-foreground hover:bg-secondary disabled:opacity-30"
-              >
-                <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-                </svg>
-              </button>
+              
+              {/* Mobile Date Nav */}
+              <div className="ml-auto flex items-center gap-2 lg:hidden">
+                 <span className="text-sm font-medium">{currentDate}</span>
+                 {/* Simple arrows could go here */}
+              </div>
             </div>
-          </div>
 
-          {/* 日报视图 */}
-          {viewMode === "report" && (
-            <DailyReportCard report={report} date={currentDate} loading={reportLoading} />
-          )}
+            {viewMode === "report" && (
+              <div className="flex gap-12">
+                <div className="flex-1">
+                  <DailyReportCard report={report} date={currentDate} loading={reportLoading} />
+                </div>
+                {report?.content && (
+                  <div className="hidden w-64 shrink-0 xl:block">
+                    <div className="sticky top-6">
+                      <TocSidebar content={report.content} />
+                    </div>
+                  </div>
+                )}
+              </div>
+            )}
 
-          {/* 文章列表视图 */}
-          {viewMode === "articles" && (
-            <>
-              <div className="mb-6">
+            {viewMode === "articles" && (
+              <div className="space-y-8">
                 <CategoryTabs
                   activeCategory={activeCategory}
                   onCategoryChange={setActiveCategory}
                   counts={categoryCounts}
                 />
-              </div>
 
-              {loading ? (
-                <div className="space-y-4">
-                  {Array.from({ length: 6 }).map((_, i) => (
-                    <div key={i} className="border-b border-border py-4">
-                      <div className="mb-2 h-3 w-24 animate-pulse rounded bg-secondary" />
-                      <div className="mb-1 h-5 w-full animate-pulse rounded bg-secondary" />
-                      <div className="mb-3 h-5 w-3/4 animate-pulse rounded bg-secondary" />
-                      <div className="space-y-1.5">
-                        <div className="h-3.5 w-full animate-pulse rounded bg-secondary/70" />
-                        <div className="h-3.5 w-5/6 animate-pulse rounded bg-secondary/70" />
+                {loading ? (
+                  <div className="grid grid-cols-1 gap-x-8 gap-y-12 sm:grid-cols-2">
+                    {Array.from({ length: 6 }).map((_, i) => (
+                      <div key={i} className="space-y-3">
+                        <div className="h-4 w-20 animate-pulse bg-secondary" />
+                        <div className="h-6 w-full animate-pulse bg-secondary" />
+                        <div className="h-4 w-full animate-pulse bg-secondary" />
                       </div>
-                    </div>
-                  ))}
-                </div>
-              ) : articles.length > 0 ? (
-                <>
-                  <div className="grid grid-cols-1 gap-0 sm:grid-cols-2 sm:gap-4 xl:grid-cols-3">
-                    {articles.map((article, index) => (
-                      <ArticleCard key={article.id} article={article} index={index} />
                     ))}
                   </div>
-
-                  {articles.length < articleTotal && (
-                    <div className="mt-8 text-center">
-                      <button
-                        onClick={() => loadArticles(currentDate, activeCategory, articlePage + 1, true)}
-                        disabled={loadingMore}
-                        className={cn(
-                          "text-sm transition-colors",
-                          loadingMore
-                            ? "cursor-not-allowed text-muted-foreground"
-                            : "text-primary underline underline-offset-4 hover:text-foreground"
-                        )}
-                      >
-                        {loadingMore
-                          ? "加载中..."
-                          : `加载更多 (${articles.length}/${articleTotal})`
-                        }
-                      </button>
+                ) : articles.length > 0 ? (
+                  <>
+                    <div className="grid grid-cols-1 gap-x-8 gap-y-0 sm:grid-cols-2">
+                      {articles.map((article, index) => (
+                        <ArticleCard key={article.id} article={article} index={index} />
+                      ))}
                     </div>
-                  )}
-                </>
-              ) : (
-                <div className="animate-fade-in py-20 text-center">
-                  <h3 className="mb-1 text-base font-semibold text-foreground">暂无内容</h3>
-                  <p className="text-sm text-muted-foreground">
-                    {activeCategory
-                      ? "该分类下暂无文章，试试其他分类"
-                      : "当日暂无抓取数据，请检查定时任务是否运行"}
-                  </p>
-                </div>
-              )}
-            </>
-          )}
-        </main>
-
-        {/* 右侧目录 */}
-        {viewMode === "report" && report?.content && (
-          <div className="hidden h-full shrink-0 overflow-y-auto border-l border-border xl:block">
-            <TocSidebar content={report.content} />
+                    
+                    {articles.length < articleTotal && (
+                      <div className="mt-12 text-center">
+                        <button
+                          onClick={() => loadArticles(currentDate, activeCategory, articlePage + 1, true)}
+                          disabled={loadingMore}
+                          className="text-sm font-medium text-foreground underline decoration-border underline-offset-4 hover:decoration-foreground"
+                        >
+                          {loadingMore ? "Loading..." : "Load More Articles"}
+                        </button>
+                      </div>
+                    )}
+                  </>
+                ) : (
+                  <div className="py-20 text-center text-muted-foreground">
+                    No articles found.
+                  </div>
+                )}
+              </div>
+            )}
           </div>
-        )}
+        </main>
       </div>
 
       <SiteFooter />

@@ -76,66 +76,69 @@ export function DateSidebar({ currentDate, onDateChange }: DateSidebarProps) {
   }, [currentDate]);
 
   return (
-    <nav className="h-full w-52 shrink-0 border-r border-border bg-card">
-      <div className="px-3 py-4">
-        <h3 className="mb-3 px-3 font-display text-[11px] font-semibold uppercase tracking-widest text-primary">
-          往期日报
+    <nav className="min-h-full w-full bg-card pl-2">
+      <div className="border-l border-border py-6 pl-4">
+        <h3 className="mb-6 font-display text-xs font-bold uppercase tracking-widest text-foreground/40">
+          Archive
         </h3>
 
         {fetchError && (
-          <div className="mb-2 flex items-center gap-1.5 rounded bg-destructive/10 px-3 py-1.5 text-xs text-destructive">
+          <div className="mb-4 flex items-center gap-1.5 rounded bg-destructive/10 px-3 py-1.5 text-xs text-destructive">
             <span>加载失败</span>
             <button onClick={fetchDates} className="underline underline-offset-2 hover:no-underline">重试</button>
           </div>
         )}
 
         {loading ? (
-          <div className="space-y-2 px-2">
+          <div className="space-y-4">
             {Array.from({ length: 3 }).map((_, i) => (
-              <div key={i} className="h-6 animate-pulse rounded bg-secondary" />
+              <div key={i} className="space-y-2">
+                <div className="h-4 w-16 animate-pulse bg-secondary" />
+                <div className="ml-3 h-3 w-24 animate-pulse bg-secondary" />
+                <div className="ml-3 h-3 w-24 animate-pulse bg-secondary" />
+              </div>
             ))}
           </div>
         ) : groups.length === 0 ? (
-          <p className="px-2 text-xs text-muted-foreground">暂无日报</p>
+          <p className="text-xs text-muted-foreground">暂无日报</p>
         ) : (
-          groups.map((group) => {
-            const isExpanded = expandedMonth === group.yearMonth;
-            return (
-              <div key={group.yearMonth} className="mb-1">
-                <button
-                  onClick={() => setExpandedMonth(isExpanded ? "" : group.yearMonth)}
-                  className="flex w-full items-center justify-between rounded px-3 py-2 text-sm font-semibold text-foreground transition-colors hover:bg-secondary"
-                >
-                  <span>{group.label}</span>
-                  <svg
-                    className={cn("h-3.5 w-3.5 text-muted-foreground transition-transform", isExpanded && "rotate-90")}
-                    fill="none" stroke="currentColor" viewBox="0 0 24 24"
+          <div className="space-y-6">
+            {groups.map((group) => {
+              const isExpanded = expandedMonth === group.yearMonth;
+              return (
+                <div key={group.yearMonth} className="relative">
+                  {/* Month Label */}
+                  <button
+                    onClick={() => setExpandedMonth(isExpanded ? "" : group.yearMonth)}
+                    className="group flex cursor-pointer items-center gap-2 text-sm font-bold text-foreground transition-colors hover:text-primary"
                   >
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-                  </svg>
-                </button>
+                    <span className={cn("h-1.5 w-1.5 rounded-full bg-border transition-colors group-hover:bg-primary", isExpanded && "bg-primary")} />
+                    <span>{group.label}</span>
+                  </button>
 
-                {isExpanded && (
-                  <div className="ml-2 mt-0.5 space-y-0.5 border-l-2 border-border pl-3">
-                    {group.dates.map((item) => (
-                      <button
-                        key={item.date}
-                        onClick={() => onDateChange(item.date)}
-                        className={cn(
-                          "block w-full rounded px-3 py-1.5 text-left text-sm transition-colors",
-                          item.date === currentDate
-                            ? "border-l-2 border-primary bg-primary/5 font-medium text-primary -ml-px"
-                            : "text-muted-foreground hover:bg-secondary hover:text-foreground"
-                        )}
-                      >
-                        {item.label}
-                      </button>
-                    ))}
-                  </div>
-                )}
-              </div>
-            );
-          })
+                  {/* Dates List */}
+                  {isExpanded && (
+                    <div className="mt-2 flex flex-col gap-1 pl-1.5">
+                      {group.dates.map((item) => (
+                        <button
+                          key={item.date}
+                          onClick={() => onDateChange(item.date)}
+                          className={cn(
+                            "relative cursor-pointer border-l border-border pl-4 text-left text-sm transition-colors hover:text-foreground",
+                            item.date === currentDate
+                              ? "border-foreground font-medium text-foreground"
+                              : "text-muted-foreground"
+                          )}
+                        >
+                          <span className="block py-1">{item.label}</span>
+                        </button>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              );
+            })}
+          </div>
         )}
       </div>
     </nav>

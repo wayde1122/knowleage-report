@@ -5,18 +5,11 @@ interface SourceBadgeProps {
   sourceType: SourceType;
 }
 
-const SOURCE_TYPE_LABEL: Record<SourceType, string> = {
-  hotlist: "热榜",
-  rss: "RSS",
-  folo: "Folo",
-};
-
 export function SourceBadge({ sourceName, sourceType }: SourceBadgeProps) {
   return (
-    <span className="text-xs text-muted-foreground">
-      <span className="font-medium">{sourceName}</span>
-      <span className="mx-1 text-border">·</span>
-      <span>{SOURCE_TYPE_LABEL[sourceType]}</span>
+    <span className="inline-flex items-center gap-1.5 text-xs font-medium text-foreground">
+      <span className="h-1.5 w-1.5 rounded-full bg-foreground" />
+      {sourceName}
     </span>
   );
 }

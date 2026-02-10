@@ -12,26 +12,18 @@ interface CategoryTabsProps {
 
 export function CategoryTabs({ activeCategory, onCategoryChange, counts }: CategoryTabsProps) {
   return (
-    <div className="flex gap-0 overflow-x-auto border-b border-border scrollbar-hide">
-      {/* 全部 */}
+    <div className="flex flex-wrap gap-x-6 gap-y-2 border-b border-border pb-4">
       <button
         onClick={() => onCategoryChange(null)}
         className={cn(
-          "relative shrink-0 px-4 py-2.5 text-sm transition-colors",
-          activeCategory === null
-            ? "font-semibold text-foreground"
-            : "text-muted-foreground hover:text-foreground"
+          "cursor-pointer text-sm font-medium transition-colors hover:text-foreground",
+          activeCategory === null ? "text-foreground" : "text-muted-foreground"
         )}
       >
-        全部
-        {counts && (
-          <span className="ml-1 text-xs text-muted-foreground">
-            {Object.values(counts).reduce((a, b) => a + b, 0)}
-          </span>
-        )}
-        {activeCategory === null && (
-          <span className="absolute inset-x-0 -bottom-px h-[2px] bg-primary" />
-        )}
+        <span className={cn(activeCategory === null && "underline decoration-2 underline-offset-4")}>
+          All
+        </span>
+        {counts && <sup className="ml-1 text-[10px] text-muted-foreground">{Object.values(counts).reduce((a, b) => a + b, 0)}</sup>}
       </button>
 
       {CATEGORIES.map((cat) => (
@@ -39,20 +31,15 @@ export function CategoryTabs({ activeCategory, onCategoryChange, counts }: Categ
           key={cat.slug}
           onClick={() => onCategoryChange(cat.slug)}
           className={cn(
-            "relative shrink-0 px-4 py-2.5 text-sm transition-colors",
-            activeCategory === cat.slug
-              ? "font-semibold text-foreground"
-              : "text-muted-foreground hover:text-foreground"
+            "cursor-pointer text-sm font-medium transition-colors hover:text-foreground",
+            activeCategory === cat.slug ? "text-foreground" : "text-muted-foreground"
           )}
         >
-          {cat.name}
+          <span className={cn(activeCategory === cat.slug && "underline decoration-2 underline-offset-4")}>
+            {cat.name}
+          </span>
           {counts?.[cat.slug] != null && (
-            <span className="ml-1 text-xs text-muted-foreground">
-              {counts[cat.slug]}
-            </span>
-          )}
-          {activeCategory === cat.slug && (
-            <span className="absolute inset-x-0 -bottom-px h-[2px] bg-primary" />
+            <sup className="ml-1 text-[10px] text-muted-foreground">{counts[cat.slug]}</sup>
           )}
         </button>
       ))}
