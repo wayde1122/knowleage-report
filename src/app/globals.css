@@ -1,36 +1,45 @@
 @import "tailwindcss";
 
 @theme {
-  --color-background: #f8f9fa;
-  --color-foreground: #0f172a;
+  /* === Classic Broadsheet — 经典报纸配色 === */
+  --color-background: #faf7f2;
+  --color-foreground: #1a1a1a;
   --color-card: #ffffff;
-  --color-card-foreground: #0f172a;
-  --color-primary: #2563eb;
+  --color-card-foreground: #1a1a1a;
+  --color-primary: #b91c1c;
   --color-primary-foreground: #ffffff;
-  --color-secondary: #f1f5f9;
-  --color-secondary-foreground: #0f172a;
-  --color-muted: #f1f5f9;
-  --color-muted-foreground: #64748b;
-  --color-accent: #f1f5f9;
-  --color-accent-foreground: #0f172a;
-  --color-destructive: #ef4444;
-  --color-border: #e2e8f0;
-  --color-input: #e2e8f0;
-  --color-ring: #2563eb;
-  --radius-sm: 0.25rem;
-  --radius-md: 0.375rem;
-  --radius-lg: 0.5rem;
-  --radius-xl: 0.75rem;
+  --color-secondary: #f3ede4;
+  --color-secondary-foreground: #1a1a1a;
+  --color-muted: #f3ede4;
+  --color-muted-foreground: #71706e;
+  --color-accent: #f3ede4;
+  --color-accent-foreground: #1a1a1a;
+  --color-destructive: #dc2626;
+  --color-border: #e0d8cd;
+  --color-input: #e0d8cd;
+  --color-ring: #b91c1c;
+  --radius-sm: 0.125rem;
+  --radius-md: 0.25rem;
+  --radius-lg: 0.375rem;
+  --radius-xl: 0.5rem;
 
-  /* 分类颜色 */
-  --color-cat-ai: #8b5cf6;
-  --color-cat-programming: #3b82f6;
-  --color-cat-frontend: #ec4899;
-  --color-cat-backend: #10b981;
-  --color-cat-product: #f59e0b;
-  --color-cat-business: #ef4444;
-  --color-cat-growth: #6366f1;
-  --color-cat-news: #06b6d4;
+  /* 分类颜色 — 报纸风格柔和色 */
+  --color-cat-ai: #6b5b95;
+  --color-cat-programming: #4a7c9b;
+  --color-cat-frontend: #c06c84;
+  --color-cat-backend: #2d8659;
+  --color-cat-product: #c68b3f;
+  --color-cat-business: #b85450;
+  --color-cat-growth: #5b6abf;
+  --color-cat-news: #3a8a8a;
+
+  /* Animation */
+  --animate-fade-in: fade-in 0.35s ease-out both;
+}
+
+@keyframes fade-in {
+  from { opacity: 0; transform: translateY(6px); }
+  to { opacity: 1; transform: translateY(0); }
 }
 
 @layer base {
@@ -41,54 +50,140 @@
 
   body {
     @apply bg-background text-foreground antialiased;
-    font-family: "Inter", system-ui, -apple-system, sans-serif;
+    font-family: var(--font-body, "PingFang SC", "Microsoft YaHei", "Noto Sans SC", system-ui, -apple-system, sans-serif);
   }
 
-  /* 所有可点击元素统一 cursor: pointer */
-  a,
-  button,
-  [role="button"],
-  [type="button"],
-  [type="submit"],
-  [type="reset"],
-  label[for],
-  select,
-  summary,
-  [tabindex]:not([tabindex="-1"]) {
+  a, button, [role="button"], [type="button"], [type="submit"], [type="reset"],
+  label[for], select, summary, [tabindex]:not([tabindex="-1"]) {
     cursor: pointer;
   }
 }
 
-/* Markdown 日报内容样式 */
-.report-content {
-  line-height: 1.8;
+/* === Display Font (Serif — 报纸标题) === */
+.font-display {
+  font-family: var(--font-display), "Songti SC", "Noto Serif SC", Georgia, serif;
 }
 
-.report-content .prose h2 {
+/* === Markdown 日报正文 === */
+.report-markdown h1 {
+  font-size: 1.5rem;
+  font-weight: 700;
+  margin-top: 2rem;
+  margin-bottom: 1rem;
+  padding-bottom: 0.5rem;
+  border-bottom: 2px solid var(--color-border);
+}
+
+.report-markdown h2 {
+  font-size: 1.25rem;
+  font-weight: 700;
+  margin-top: 2rem;
+  margin-bottom: 0.75rem;
   scroll-margin-top: 5rem;
 }
 
-.report-content .prose ol > li {
-  margin-top: 1rem;
+.report-markdown h3 {
+  font-size: 1.1rem;
+  font-weight: 600;
+  margin-top: 1.5rem;
+  margin-bottom: 0.5rem;
+}
+
+.report-markdown p {
+  margin-bottom: 1rem;
+  line-height: 1.85;
+}
+
+.report-markdown a {
+  color: var(--color-primary);
+  text-decoration: underline;
+  text-underline-offset: 2px;
+  text-decoration-color: rgba(185, 28, 28, 0.3);
+}
+
+.report-markdown a:hover {
+  text-decoration-color: var(--color-primary);
+}
+
+.report-markdown strong {
+  color: var(--color-foreground);
+  font-weight: 700;
+}
+
+.report-markdown ul,
+.report-markdown ol {
+  padding-left: 1.5rem;
   margin-bottom: 1rem;
 }
 
-.report-content .prose ol > li > p:first-child {
+.report-markdown li {
+  margin-bottom: 0.5rem;
+  line-height: 1.75;
+}
+
+.report-markdown ol > li {
+  margin-top: 0.75rem;
+  margin-bottom: 0.75rem;
+}
+
+.report-markdown ol > li > p:first-child {
   margin-top: 0;
 }
 
-.report-content .prose strong {
-  color: #0f172a;
-}
-
-.report-content .prose blockquote {
-  border-left-color: #2563eb;
-  background: #f8fafc;
+.report-markdown blockquote {
+  border-left: 3px solid var(--color-primary);
+  background: var(--color-secondary);
   padding: 0.75rem 1rem;
-  border-radius: 0 0.5rem 0.5rem 0;
+  border-radius: 0 0.375rem 0.375rem 0;
+  margin: 1rem 0;
 }
 
-/* 自定义滚动条 */
+.report-markdown code {
+  background: var(--color-secondary);
+  padding: 0.1rem 0.35rem;
+  border-radius: 0.2rem;
+  font-size: 0.875rem;
+  font-family: var(--font-mono, "JetBrains Mono", monospace);
+}
+
+.report-markdown pre {
+  background: var(--color-secondary);
+  border: 1px solid var(--color-border);
+  border-radius: 0.375rem;
+  padding: 1rem;
+  overflow-x: auto;
+  margin: 1rem 0;
+}
+
+.report-markdown pre code {
+  background: transparent;
+  padding: 0;
+}
+
+.report-markdown hr {
+  border-color: var(--color-border);
+  margin: 2rem 0;
+}
+
+.report-markdown table {
+  width: 100%;
+  border-collapse: collapse;
+  margin: 1rem 0;
+}
+
+.report-markdown th,
+.report-markdown td {
+  padding: 0.5rem 0.75rem;
+  border: 1px solid var(--color-border);
+  text-align: left;
+}
+
+.report-markdown th {
+  background: var(--color-secondary);
+  font-weight: 600;
+}
+
+/* === Scrollbar === */
 ::-webkit-scrollbar {
   width: 6px;
   height: 6px;
@@ -99,10 +194,19 @@
 }
 
 ::-webkit-scrollbar-thumb {
-  background: #cbd5e1;
+  background: #d0c8bc;
   border-radius: 3px;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: #94a3b8;
+  background: #b8b0a4;
+}
+
+.scrollbar-hide {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+.scrollbar-hide::-webkit-scrollbar {
+  display: none;
 }

@@ -8,9 +8,10 @@ import { formatRelativeTime, cn } from "@/lib/utils";
 
 interface ArticleCardProps {
   article: Article;
+  index?: number;
 }
 
-export function ArticleCard({ article }: ArticleCardProps) {
+export function ArticleCard({ article, index = 0 }: ArticleCardProps) {
   const category = getCategoryBySlug(article.category);
   const displayTitle = article.title_zh ?? article.title;
 
@@ -20,24 +21,21 @@ export function ArticleCard({ article }: ArticleCardProps) {
       target="_blank"
       rel="noopener noreferrer"
       className={cn(
-        "group flex flex-col rounded-xl border border-border bg-card p-4",
-        "transition-all duration-200 hover:border-primary/30 hover:shadow-lg hover:shadow-primary/5",
-        "hover:-translate-y-0.5"
+        "group flex flex-col border-b border-border py-4 sm:rounded sm:border sm:border-border sm:bg-card sm:p-4",
+        "transition-colors duration-150 hover:bg-secondary/40",
+        "animate-fade-in"
       )}
+      style={{ animationDelay: `${index * 40}ms` }}
     >
-      {/* 顶部：分类 + 热度 */}
-      <div className="mb-3 flex items-center justify-between">
+      {/* 顶部元信息行 */}
+      <div className="mb-2 flex items-center gap-2 text-xs text-muted-foreground">
         {category && (
-          <span
-            className="inline-flex items-center gap-1 rounded-md px-2 py-0.5 text-xs font-medium"
-            style={{
-              backgroundColor: `${category.color}15`,
-              color: category.color,
-            }}
-          >
-            <span>{category.icon}</span>
-            <span>{category.name}</span>
+          <span className="font-medium uppercase tracking-wide" style={{ color: category.color }}>
+            {category.name}
           </span>
+        )}
+        {category && article.heat_value != null && article.heat_value > 0 && (
+          <span className="text-border">·</span>
         )}
         {article.heat_value != null && article.heat_value > 0 && (
           <HeatIndicator value={article.heat_value} rank={article.rank} />
@@ -45,13 +43,13 @@ export function ArticleCard({ article }: ArticleCardProps) {
       </div>
 
       {/* 标题 */}
-      <h3 className="mb-2 line-clamp-2 text-[15px] font-semibold leading-snug text-foreground group-hover:text-primary">
+      <h3 className="mb-1 line-clamp-2 text-[15px] font-bold leading-snug text-foreground group-hover:text-primary">
         {displayTitle}
       </h3>
 
-      {/* 英文原标题（如果有翻译） */}
+      {/* 英文原标题 */}
       {article.title_zh && (
-        <p className="mb-2 line-clamp-1 text-xs text-muted-foreground">
+        <p className="mb-1 line-clamp-1 text-xs italic text-muted-foreground/70">
           {article.title}
         </p>
       )}
@@ -63,13 +61,11 @@ export function ArticleCard({ article }: ArticleCardProps) {
         </p>
       )}
 
-      {/* 底部：来源 + 时间 */}
-      <div className="mt-auto flex items-center justify-between pt-3 border-t border-border/50">
+      {/* 底部 */}
+      <div className="mt-auto flex items-center gap-3 pt-2 text-xs text-muted-foreground">
         <SourceBadge sourceName={article.source_name} sourceType={article.source_type} />
         {article.published_at && (
-          <time className="text-xs text-muted-foreground">
-            {formatRelativeTime(article.published_at)}
-          </time>
+          <time>{formatRelativeTime(article.published_at)}</time>
         )}
       </div>
     </a>

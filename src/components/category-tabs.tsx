@@ -12,25 +12,25 @@ interface CategoryTabsProps {
 
 export function CategoryTabs({ activeCategory, onCategoryChange, counts }: CategoryTabsProps) {
   return (
-    <div className="flex gap-2 overflow-x-auto pb-1 scrollbar-hide">
+    <div className="flex gap-0 overflow-x-auto border-b border-border scrollbar-hide">
       {/* 全部 */}
       <button
         onClick={() => onCategoryChange(null)}
         className={cn(
-          "flex shrink-0 items-center gap-1.5 rounded-full px-4 py-2 text-sm font-medium transition-all",
+          "relative shrink-0 px-4 py-2.5 text-sm transition-colors",
           activeCategory === null
-            ? "bg-primary text-white shadow-sm"
-            : "bg-secondary text-muted-foreground hover:bg-secondary/80 hover:text-foreground"
+            ? "font-semibold text-foreground"
+            : "text-muted-foreground hover:text-foreground"
         )}
       >
-        <span>全部</span>
+        全部
         {counts && (
-          <span className={cn(
-            "text-xs",
-            activeCategory === null ? "text-white/70" : "text-muted-foreground"
-          )}>
+          <span className="ml-1 text-xs text-muted-foreground">
             {Object.values(counts).reduce((a, b) => a + b, 0)}
           </span>
+        )}
+        {activeCategory === null && (
+          <span className="absolute inset-x-0 -bottom-px h-[2px] bg-primary" />
         )}
       </button>
 
@@ -39,22 +39,20 @@ export function CategoryTabs({ activeCategory, onCategoryChange, counts }: Categ
           key={cat.slug}
           onClick={() => onCategoryChange(cat.slug)}
           className={cn(
-            "flex shrink-0 items-center gap-1.5 rounded-full px-4 py-2 text-sm font-medium transition-all",
+            "relative shrink-0 px-4 py-2.5 text-sm transition-colors",
             activeCategory === cat.slug
-              ? "text-white shadow-sm"
-              : "bg-secondary text-muted-foreground hover:bg-secondary/80 hover:text-foreground"
+              ? "font-semibold text-foreground"
+              : "text-muted-foreground hover:text-foreground"
           )}
-          style={activeCategory === cat.slug ? { backgroundColor: cat.color } : undefined}
         >
-          <span>{cat.icon}</span>
-          <span>{cat.name}</span>
+          {cat.name}
           {counts?.[cat.slug] != null && (
-            <span className={cn(
-              "text-xs",
-              activeCategory === cat.slug ? "text-white/70" : "text-muted-foreground"
-            )}>
+            <span className="ml-1 text-xs text-muted-foreground">
               {counts[cat.slug]}
             </span>
+          )}
+          {activeCategory === cat.slug && (
+            <span className="absolute inset-x-0 -bottom-px h-[2px] bg-primary" />
           )}
         </button>
       ))}

@@ -14,7 +14,6 @@ interface DateGroup {
   dates: { date: string; label: string }[];
 }
 
-/** 将日期列表按月分组 */
 function groupDatesByMonth(dates: string[]): DateGroup[] {
   const groups = new Map<string, DateGroup>();
 
@@ -52,63 +51,48 @@ export function DateSidebar({ currentDate, onDateChange }: DateSidebarProps) {
     setFetchError(false);
     try {
       const res = await fetch("/api/report-dates");
-      if (!res.ok) {
-        console.error(`[DateSidebar] 请求失败: ${res.status}`);
-        throw new Error(`HTTP ${res.status}`);
-      }
+      if (!res.ok) throw new Error(`HTTP ${res.status}`);
       const data = await res.json();
       const reportDates: string[] = data.dates ?? [];
 
-      // 确保今天始终在列表中（即使还没生成日报）
       const today = getTodayDate();
       const dateSet = new Set(reportDates);
-      if (!dateSet.has(today)) {
-        reportDates.unshift(today);
-      }
+      if (!dateSet.has(today)) reportDates.unshift(today);
 
-      const grouped = groupDatesByMonth(reportDates);
-      setGroups(grouped);
+      setGroups(groupDatesByMonth(reportDates));
     } catch (err) {
       console.error("[DateSidebar] 加载日期列表失败:", err);
       setFetchError(true);
-      // 请求失败时只显示今天
-      const today = getTodayDate();
-      setGroups(groupDatesByMonth([today]));
+      setGroups(groupDatesByMonth([getTodayDate()]));
     } finally {
       setLoading(false);
     }
   }, []);
 
-  // 仅在组件挂载时拉取日期列表
-  useEffect(() => {
-    fetchDates();
-  }, [fetchDates]);
+  useEffect(() => { fetchDates(); }, [fetchDates]);
 
-  // 切换日期时自动展开对应月份（不重新请求）
   useEffect(() => {
     setExpandedMonth(currentDate.slice(0, 7));
   }, [currentDate]);
 
   return (
-    <nav className="h-full w-52 shrink-0 border-r border-border bg-white">
+    <nav className="h-full w-52 shrink-0 border-r border-border bg-card">
       <div className="px-3 py-4">
-        {/* 加载失败提示 */}
+        <h3 className="mb-3 px-3 font-display text-[11px] font-semibold uppercase tracking-widest text-primary">
+          往期日报
+        </h3>
+
         {fetchError && (
-          <div className="mb-2 flex items-center gap-1.5 rounded-md bg-destructive/10 px-3 py-1.5 text-xs text-destructive">
+          <div className="mb-2 flex items-center gap-1.5 rounded bg-destructive/10 px-3 py-1.5 text-xs text-destructive">
             <span>加载失败</span>
-            <button
-              onClick={fetchDates}
-              className="underline underline-offset-2 hover:no-underline"
-            >
-              重试
-            </button>
+            <button onClick={fetchDates} className="underline underline-offset-2 hover:no-underline">重试</button>
           </div>
         )}
 
         {loading ? (
           <div className="space-y-2 px-2">
             {Array.from({ length: 3 }).map((_, i) => (
-              <div key={i} className="h-6 animate-pulse rounded bg-secondary/60" />
+              <div key={i} className="h-6 animate-pulse rounded bg-secondary" />
             ))}
           </div>
         ) : groups.length === 0 ? (
@@ -119,43 +103,28 @@ export function DateSidebar({ currentDate, onDateChange }: DateSidebarProps) {
             return (
               <div key={group.yearMonth} className="mb-1">
                 <button
-                  onClick={() =>
-                    setExpandedMonth(isExpanded ? "" : group.yearMonth)
-                  }
-                  className={cn(
-                    "flex w-full items-center justify-between rounded-md px-3 py-2 text-sm font-semibold transition-colors",
-                    "text-foreground hover:bg-secondary"
-                  )}
+                  onClick={() => setExpandedMonth(isExpanded ? "" : group.yearMonth)}
+                  className="flex w-full items-center justify-between rounded px-3 py-2 text-sm font-semibold text-foreground transition-colors hover:bg-secondary"
                 >
                   <span>{group.label}</span>
                   <svg
-                    className={cn(
-                      "h-4 w-4 text-muted-foreground transition-transform",
-                      isExpanded && "rotate-90"
-                    )}
-                    fill="none"
-                    stroke="currentColor"
-                    viewBox="0 0 24 24"
+                    className={cn("h-3.5 w-3.5 text-muted-foreground transition-transform", isExpanded && "rotate-90")}
+                    fill="none" stroke="currentColor" viewBox="0 0 24 24"
                   >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth={2}
-                      d="M9 5l7 7-7 7"
-                    />
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
                   </svg>
                 </button>
 
                 {isExpanded && (
-                  <div className="ml-2 mt-1 space-y-0.5 border-l-2 border-border pl-3">
+                  <div className="ml-2 mt-0.5 space-y-0.5 border-l-2 border-border pl-3">
                     {group.dates.map((item) => (
                       <button
                         key={item.date}
                         onClick={() => onDateChange(item.date)}
                         className={cn(
-                          "block w-full rounded-md px-3 py-1.5 text-left text-sm transition-colors",
+                          "block w-full rounded px-3 py-1.5 text-left text-sm transition-colors",
                           item.date === currentDate
-                            ? "bg-primary/10 font-medium text-primary"
+                            ? "border-l-2 border-primary bg-primary/5 font-medium text-primary -ml-px"
                             : "text-muted-foreground hover:bg-secondary hover:text-foreground"
                         )}
                       >
