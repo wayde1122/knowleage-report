@@ -165,7 +165,7 @@ export async function runDailyPipeline(targetDate?: string): Promise<{
       .limit(500);
 
     if (todayArticles && todayArticles.length > 0) {
-      const analysis = await generateDailyAnalysis(todayArticles);
+      const analysis = await generateDailyAnalysis(todayArticles, today);
 
       const stats = {
         totalArticles: todayArticles.length,

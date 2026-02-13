@@ -62,7 +62,8 @@ function filterLowQuality(articles: Article[]): Article[] {
 
 /** 生成每日分析报告 */
 export async function generateDailyAnalysis(
-  articles: Article[]
+  articles: Article[],
+  targetDate: string
 ): Promise<{ content: string; highlights: ReportHighlights }> {
   // 先过滤低质量文章
   const qualityArticles = filterLowQuality(articles);
@@ -112,6 +113,8 @@ export async function generateDailyAnalysis(
    - **趋势洞察**：1-2 段简短分析，点出今日内容背后的行业趋势
 
    格式要求：
+   - 不要在 markdown 开头添加大标题或日期标题（页面已有标题和日期展示）
+   - 直接从 ## 今日摘要 开始
    - 重点资讯用编号列表（1. 2. 3.）
    - 每条包含加粗标题 + 一句话描述（不超过 2 句）
    - 不需要面面俱到，只挑最重要的内容
@@ -122,7 +125,7 @@ export async function generateDailyAnalysis(
         },
         {
           role: "user",
-          content: `今日共收录 ${qualityArticles.length} 条内容（已去重聚合），请生成精炼的日报分析：\n${content}`,
+          content: `今天是 ${targetDate}，共收录 ${qualityArticles.length} 条内容（已去重聚合），请生成精炼的日报分析：\n${content}`,
         },
       ],
       { jsonMode: true, temperature: 0.5, maxTokens: 4096 }
